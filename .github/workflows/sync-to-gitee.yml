@@ -3,29 +3,31 @@ name: Sync to Gitee
 on:
   push:
     branches:
-      - "**"  # 监听所有分支的推送
+      - "**"
   delete:
     branches:
-      - "**"  # 监听分支删除操作
+      - "**"
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. 检出代码（必须获取完整历史记录）
+      # 1. 检出代码
+      # 关键点：使用 GITHUB_TOKEN 来从 GitHub 克隆代码
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # 2. 配置 SSH 密钥并推送到 Gitee
+      # 关键点：使用 GITEE_SSH_KEY 来推送到 Gitee
       - name: Sync to Gitee
         uses: wearerequired/git-mirror-action@master
         env:
-          # 这里引用你刚才在“仓库机密”中设置的 GITEE_SSH_KEY
           SSH_PRIVATE_KEY: ${{ secrets.GITEE_SSH_KEY }}
         with:
-          # GitHub 源地址 (HTTPS)
-          source-repo: "git@github.com:only1nn/deepseek-harness.git"
-          # Gitee 目标地址 (SSH)
+          # 源仓库地址（使用 HTTPS 格式，避免再次触发 SSH 验证）
+          source-repo: "https://github.com/only1nn/deepseek-harness.git"
+          # 目标仓库地址（使用 SSH 格式）
           destination-repo: "git@gitee.com:liu_houlin/deepseek-harness.git"
